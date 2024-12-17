@@ -2,9 +2,12 @@ import websocket
 import os
 from dotenv import load_dotenv
 from pocketbase import Client
-from pocketbase.models.utils.schema_field import SchemaField
 from pocketbase.models.collection import Collection
 import json
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, LongType
+import pandas as pd
 
 def data_transform(ws, message):
     data = json.loads(message)
@@ -15,9 +18,10 @@ def data_transform(ws, message):
                 'price': trade['p'],
                 'timestamp': trade['t'],
                 'volume': trade['v'],
-                'conditions': trade['c'],
+                'conditions': json.dumps(trade['c']),
             }
             insert_data(clean_data)
+            send_to_spark(clean_data)
 
 def on_error(ws, error):
     print(error)
@@ -27,10 +31,10 @@ def on_close(ws):
 
 def on_open(ws):
     ws.send('{"type":"subscribe","symbol":"AAPL"}')
-    # ws.send('{"type":"subscribe","symbol":"AMZN"}')
-    # ws.send('{"type":"subscribe","symbol":"TSLA"}')
-    # ws.send('{"type":"subscribe","symbol":"GOOGL"}')
-    # ws.send('{"type":"subscribe","symbol":"MSFT"}')
+    ws.send('{"type":"subscribe","symbol":"AMZN"}')
+    ws.send('{"type":"subscribe","symbol":"TSLA"}')
+    ws.send('{"type":"subscribe","symbol":"GOOGL"}')
+    ws.send('{"type":"subscribe","symbol":"MSFT"}')
 
 def insert_data(data):
     collection_name = data['symbol']
@@ -39,18 +43,37 @@ def insert_data(data):
     try:
         client.collections.get_one(collection_name)
     except:
-        schema = [
-            SchemaField(name="symbol", type="text", required=True),
-            SchemaField(name="price", type="number", required=True),
-            SchemaField(name="timestamp", type="number", required=True),
-            SchemaField(name="volume", type="number", required=True),
-            SchemaField(name="conditions", type="json", required=True)
-        ]
-        collection ={
+        client.collections.create({
             "name": collection_name,
-            "schema": schema,
-        }
-        client.collections.create(collection)
+            "type": "base",
+            "fields": [
+                {
+                    "name": "symbol",
+                    "type": "text",
+                    "required": True,
+                },
+                {
+                    "name": "price",
+                    "type": "number",
+                    "required": True,
+                },
+                {
+                    "name": "timestamp",
+                    "type": "number",
+                    "required": True,
+                },
+                {
+                    "name": "volume",
+                    "type": "number",
+                    "required": True,
+                },
+                {
+                    "name": "conditions",
+                    "type": "json",
+                    "required": True,
+                },
+            ],
+        })
 
     # Insert data into the collection
     client.collection(collection_name).create({
@@ -61,22 +84,22 @@ def insert_data(data):
         "conditions": data['conditions']
     })
 
-def authenticate_admin(client):
-    admin_email = os.getenv("ADMIN_EMAIL")
-    admin_password = os.getenv("ADMIN_PASSWORD")
-    auth_data = client.admins.auth_with_password(admin_email, admin_password)
-    return auth_data.token
+def send_to_spark(data):
+    df = pd.DataFrame([data])
+    
+    spark_df = spark.createDataFrame(df)
+    spark_df.write.format("json").mode("append").save("#path")
 
 if __name__ == "__main__":
     load_dotenv()
     TOKEN = os.getenv("API_KEY")
-
-    client = Client("http://127.0.0.1:8090")
     admin_email = os.getenv("ADMIN_EMAIL")
     admin_password = os.getenv("ADMIN_PASSWORD")
+
+    client = Client("http://127.0.0.1:8090")
     authData = client.collection("_superusers").auth_with_password(admin_email, admin_password);
-    
-    #websocket.enableTrace(True)
+
+    spark = SparkSession.builder.appName("StockDataStream").getOrCreate()
 
     ws = websocket.WebSocketApp("wss://ws.finnhub.io?token=" + TOKEN,
                               on_message = data_transform,
