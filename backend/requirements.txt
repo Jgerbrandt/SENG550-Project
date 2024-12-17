@@ -1,4 +1,5 @@
 python-dotenv
-websocket
 websocket-client
 pocketbase
+pandas
+pyspark
