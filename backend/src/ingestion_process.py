@@ -9,6 +9,7 @@ from pyspark.sql.functions import col
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, LongType
 import pandas as pd
 from datetime import datetime
+from kafka import KafkaProducer
 
 def data_transform(ws, message):
     data = json.loads(message)
@@ -27,6 +28,7 @@ def data_transform(ws, message):
                     }
                     if '@' in trade['c']:
                         insert_data(clean_data)
+                        producer.send('stock_topic', clean_data)
                 except Exception as e:
                     print(f"Error processing trade data: {e}")
 
@@ -103,12 +105,6 @@ def insert_data(data):
         "conditions": data['conditions']
     })
 
-def send_to_spark(data):
-    df = pd.DataFrame([data])
-    
-    spark_df = spark.createDataFrame(df)
-    spark_df.write.format("json").mode("append").save("#path")
-
 if __name__ == "__main__":
     load_dotenv()
     API_KEY = os.getenv("API_KEY")
@@ -118,6 +114,10 @@ if __name__ == "__main__":
 
     client = Client("http://127.0.0.1:8090")
     authData = client.collection("_superusers").auth_with_password(admin_email, admin_password);
+
+    producer = KafkaProducer(bootstrap_servers='localhost:9092',
+        value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+
 
     ws = websocket.WebSocketApp(
         "wss://stream.data.alpaca.markets/v2/iex",
@@ -130,7 +130,6 @@ if __name__ == "__main__":
         on_close=on_close
     )
 
-    #spark = SparkSession.builder.appName("StockDataStream").getOrCreate()
-
     ws.on_open = on_open
     ws.run_forever()
+
