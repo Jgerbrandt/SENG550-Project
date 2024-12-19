@@ -8,6 +8,7 @@
 
     let item: { ml: any[], actual: any[] } = { ml: [], actual: [] };
 
+	let chart: any;
 	let chart_context: any;
 	let chart_canvas: any;
 
@@ -28,6 +29,15 @@
         }
     }
 
+	function updateChart() {
+        if (chart) {
+            chart.data.labels = Array.from({ length: item.ml.length }, (_, i) => i + 1);
+            chart.data.datasets[0].data = item.ml;
+            chart.data.datasets[1].data = item.actual;
+            chart.update();
+        }
+    }
+
     onMount(() => {
         fetchData();
 
@@ -39,26 +49,53 @@
                 ml: updatedItem.ml,
                 actual: updatedItem.actual
             };
+            updateChart();
         }).catch((error: any) => {
             console.error('Error subscribing to collection:', error);
         });
 
-		chart_context = chart_canvas.getContext('2d');
-            var chart = new Chart(chart_context, {
-				type: 'line',
-				data: {
-						labels: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-						datasets: [{
-								label: 'Revenue',
-								backgroundColor: 'rgb(255, 99, 132)',
-								borderColor: 'rgb(255, 99, 132)',
-								data: [0, 10, 5, 2, 20, 30, 45],
-						}]
-				}
-		});
-
+        chart_context = chart_canvas.getContext('2d');
+        chart = new Chart(chart_context, {
+            type: 'line',
+            data: {
+                labels: [], // Initial empty labels
+                datasets: [
+                    {
+                        label: 'ML',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        data: [], // Initial empty data
+                    },
+                    {
+                        label: 'Actual',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        data: [], // Initial empty data
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+				animation: false,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Index',
+                        },
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Value',
+                        },
+                    },
+                },
+            },
+        });
     });
-
 </script>
 
 <main>
