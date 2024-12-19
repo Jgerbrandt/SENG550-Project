@@ -127,20 +127,52 @@
 </script>
 
 <style>
-
-    .chart-container {
+    body {
+        overflow: hidden; /* Prevent scrolling */
+        margin: 0; /* Remove default margin */
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
+        width: 100vw; /* Ensure full viewport width */
+    }
+
+    main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .box {
+        display: flex;
+        width: 80%;
+        aspect-ratio: 5 / 2; /* Maintain 5:2 aspect ratio */
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 10px;
+        box-sizing: border-box; /* Include padding in width/height */
+    }
+
+    .sidebar {
+        width: 20%;
+        padding: 20px;
+        color: white;
+        border-radius: 10px;
     }
 
     .chart-wrapper {
         width: 80%;
-        height: 70%;
-        background-color: rgba(0, 0, 0, 0.7);
-        padding: 20px;
-        border-radius: 10px;
+        height: 100%;
     }
 
     canvas {
@@ -150,9 +182,20 @@
 </style>
 
 <main>
-    <div class="chart-container">
-        <div class="chart-wrapper">
-            <canvas bind:this={chart_canvas} id="myChart"></canvas>
+    <div class="container">
+        <div class="box">
+            <div class="sidebar">
+                <h2>Chart Options</h2>
+                <p>Select an option:</p>
+                <select>
+                    <option value="option1">Option 1</option>
+                    <option value="option2">Option 2</option>
+                    <option value="option3">Option 3</option>
+                </select>
+            </div>
+            <div class="chart-wrapper">
+                <canvas bind:this={chart_canvas} id="myChart"></canvas>
+            </div>
         </div>
     </div>
 </main>
