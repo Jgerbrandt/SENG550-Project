@@ -9,28 +9,14 @@
 		<!-- App Bar -->
 		<AppBar>
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Skeleton</strong>
+				<img src="/big_logo_white.svg" alt="Big Logo" class="h-16 mr-2" />
+				<hr class="mx-4"/>
+				<strong class="text-xl uppercase">Stock Stalker</strong>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 				<a
 					class="btn btn-sm variant-ghost-surface"
-					href="https://discord.gg/EXqV7W8MtY"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Discord
-				</a>
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://twitter.com/SkeletonUI"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Twitter
-				</a>
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://github.com/skeletonlabs/skeleton"
+					href="https://github.com/Jgerbrandt/SENG550-Project"
 					target="_blank"
 					rel="noreferrer"
 				>
