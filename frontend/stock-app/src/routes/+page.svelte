@@ -7,15 +7,16 @@
     Chart.register(...registerables);
 
     let item: { ml: any[], actual: any[] } = { ml: [], actual: [] };
+	let selectedStock = 'AMZN';
 
 	let chart: any;
 	let chart_context: any;
 	let chart_canvas: any;
 
     // Fetch initial data from the collection
-    async function fetchData() {
+    async function fetchData(stock: string) {
         try {
-            const result = await pb.collection('AMZN').getList(1, 1, {});
+            const result = await pb.collection(stock).getList(1, 1, {});
             console.log('Fetched data:', result);
             if (result.items.length > 0) {
                 const fetchedItem = result.items[0];
@@ -38,8 +39,14 @@
         }
     }
 
+	function handleStockChange(event: Event) {
+        const selectElement = event.target as HTMLSelectElement;
+        selectedStock = selectElement.value;
+        fetchData(selectedStock);
+    }
+
     onMount(() => {
-        fetchData();
+        fetchData(selectedStock);
 
         // Subscribe to the collection
         pb.collection('AMZN').subscribe('*', function (e: any) {
@@ -170,6 +177,10 @@
         border-radius: 10px;
     }
 
+    .sidebar select {
+        color: black; /* Set dropdown text color to black */
+    }
+
     .chart-wrapper {
         width: 80%;
         height: 100%;
@@ -186,11 +197,13 @@
         <div class="box">
             <div class="sidebar">
                 <h2>Chart Options</h2>
-                <p>Select an option:</p>
-                <select>
-                    <option value="option1">Option 1</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
+                <p>Select a stock:</p>
+                <select on:change={handleStockChange}>
+                    <option value="AMZN">AMZN</option>
+                    <option value="AAPL">AAPL</option>
+                    <option value="TSLA">TSLA</option>
+                    <option value="GOOGL">GOOGL</option>
+                    <option value="MSFT">MSFT</option>
                 </select>
             </div>
             <div class="chart-wrapper">
