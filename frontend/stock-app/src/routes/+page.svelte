@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, afterUpdate } from 'svelte';
+    import { onMount } from 'svelte';
     import PocketBase from 'pocketbase';
     import { Chart, registerables } from 'chart.js';
 	import { env } from '$env/dynamic/public';
@@ -182,10 +182,6 @@
                 }
             }]
         });
-    });
-
-	afterUpdate(() => {
-        fetchData(selectedStock);
     });
 	
 </script>
