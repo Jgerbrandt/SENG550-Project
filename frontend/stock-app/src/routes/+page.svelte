@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, afterUpdate } from 'svelte';
     import PocketBase from 'pocketbase';
     import { Chart, registerables } from 'chart.js';
 	import { env } from '$env/dynamic/public';
