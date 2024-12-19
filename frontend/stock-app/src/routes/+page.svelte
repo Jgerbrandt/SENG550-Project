@@ -42,7 +42,7 @@
                 const rawItem = rawResult.items[0];
                 const predictedItem = predictedResult.items[0];
                 item = {
-                    ml: predictedItem.data.map((tuple: [number, number]) => tuple[0]),
+                    ml: predictedItem.data,
                     actual: rawItem.data.map((tuple: [number, number]) => tuple[0])
                 };
                 updateChart();
@@ -100,7 +100,7 @@
         pb.collection(`${selectedStock}Predicted`).subscribe('*', function (e: any) {
             console.log('Subscription event:', e);
             const updatedItem = e.record;
-            item.ml = updatedItem.data.map((tuple: [number, number]) => tuple[0]);
+            item.ml = updatedItem.data; // Use single value for predicted data
             updateChart();
             updateRecommendation();
         }).catch((error: any) => {
