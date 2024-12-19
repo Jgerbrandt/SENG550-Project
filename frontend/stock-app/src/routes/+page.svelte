@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import PocketBase from 'pocketbase';
     import { Chart, registerables } from 'chart.js';
+	import { env } from '$env/dynamic/public';
 
     const pb = new PocketBase('http://127.0.0.1:8090');
     Chart.register(...registerables);
@@ -13,6 +14,23 @@
 	let chart: any;
 	let chart_context: any;
 	let chart_canvas: any;
+
+	async function loginSuperUser() {
+        const adminEmail = env.PUBLIC_ADMIN_EMAIL;
+        const adminPassword = env.PUBLIC_ADMIN_PASSWORD;
+
+        if (!adminEmail || !adminPassword) {
+            console.error('Admin email or password is not defined');
+            return;
+        }
+
+        try {
+            await pb.collection('_superusers').authWithPassword(adminEmail, adminPassword);
+            console.log('Logged in as super user');
+        } catch (error) {
+            console.error(`Error logging in as super user ${adminEmail}: `, error);
+        }
+    }
 
     // Fetch initial data from the collection
     async function fetchData(stock: string) {
@@ -63,6 +81,7 @@
     }
 
     onMount(() => {
+		loginSuperUser();
         fetchData(selectedStock);
 
         // Subscribe to the collection
