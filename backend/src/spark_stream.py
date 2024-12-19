@@ -48,11 +48,11 @@ stock_data = {
 }
 
 predicted_data = {
-    "AAPL": [] * 60,
-    "AMZN": [] * 60,
-    "TSLA": [] * 60,
-    "GOOGL": [] * 60,
-    "MSFT": [] * 60
+    "AAPL": [0] * 60,
+    "AMZN": [0] * 60,
+    "TSLA": [0] * 60,
+    "GOOGL": [0] * 60,
+    "MSFT": [0] * 60
 }
 
 def process_batch(batch_df, batch_id):
