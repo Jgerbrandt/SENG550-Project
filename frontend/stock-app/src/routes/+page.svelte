@@ -8,6 +8,7 @@
 
     let item: { ml: any[], actual: any[] } = { ml: [], actual: [] };
 	let selectedStock = 'AMZN';
+    let recommendation = '';
 
 	let chart: any;
 	let chart_context: any;
@@ -27,6 +28,7 @@
                     actual: rawItem.data
                 };
                 updateChart();
+				updateRecommendation();
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -39,6 +41,18 @@
             chart.data.datasets[0].data = item.ml;
             chart.data.datasets[1].data = item.actual;
             chart.update();
+        }
+    }
+
+	function updateRecommendation() {
+        if (item.ml.length > 0 && item.actual.length > 0) {
+            const lastPredicted = item.ml[item.ml.length - 1];
+            const lastActual = item.actual[item.actual.length - 1];
+            if (lastPredicted > lastActual) {
+                recommendation = 'Buy';
+            } else {
+                recommendation = 'Sell';
+            }
         }
     }
 
@@ -69,6 +83,8 @@
         }).catch((error: any) => {
             console.error('Error subscribing to collection:', error);
         });
+
+		updateRecommendation();
 
         chart_context = chart_canvas.getContext('2d');
         chart = new Chart(chart_context, {
@@ -171,7 +187,7 @@
 
     .box {
         display: flex;
-        width: 80%;
+        width: 90%;
         aspect-ratio: 5 / 2; /* Maintain 5:2 aspect ratio */
         background-color: rgba(0, 0, 0, 0.7);
         padding: 20px;
@@ -190,6 +206,19 @@
         color: black; /* Set dropdown text color to black */
     }
 
+	.recommendation {
+        margin-top: 10px;
+        font-size: 1.2em;
+    }
+
+    .buy {
+        color: green;
+    }
+
+    .sell {
+        color: red;
+    }
+
     .chart-wrapper {
         width: 80%;
         height: 100%;
@@ -205,8 +234,7 @@
     <div class="container">
         <div class="box">
             <div class="sidebar">
-                <h2>Chart Options</h2>
-                <p>Select a stock:</p>
+                <h2>Select a stock</h2>
                 <select on:change={handleStockChange}>
                     <option value="AMZN">AMZN</option>
                     <option value="AAPL">AAPL</option>
@@ -214,6 +242,10 @@
                     <option value="GOOGL">GOOGL</option>
                     <option value="MSFT">MSFT</option>
                 </select>
+				<h2>Recommendation</h2>
+				<p class="recommendation {recommendation === 'Buy' ? 'buy' : 'sell'}">
+                    {recommendation}
+                </p>
             </div>
             <div class="chart-wrapper">
                 <canvas bind:this={chart_canvas} id="myChart"></canvas>
