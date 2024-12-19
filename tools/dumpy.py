@@ -1,48 +1,59 @@
 import random
 import time
+from pocketbase import PocketBase
 
-POCKETBASE_URL = 'http://127.0.0.1:8090'
+client = PocketBase('http://127.0.0.1:8090')
 
-# General imports =================================================================================
-import os
-from pocketbase import Client
-from dotenv import load_dotenv
+# Initialize data for each stock
+stocks = ["AMZN", "AAPL", "GOOGL", "MSFT", "TSLA"]
+data = {
+    stock: {
+        "actual": [random.randint(1, 100) for _ in range(60)],
+        "predicted": [random.randint(1, 100) for _ in range(60)]
+    }
+    for stock in stocks
+}
 
+# Define the collections
+collections = {
+    "AMZNRaw": "AMZN",
+    "AMZNPredicted": "AMZN",
+    "AAPLRaw": "AAPL",
+    "AAPLPredicted": "AAPL",
+    "GOOGLRaw": "GOOGL",
+    "GOOGLPredicted": "GOOGL",
+    "MSFTRaw": "MSFT",
+    "MSFTPredicted": "MSFT",
+    "TSLARaw": "TSLA",
+    "TSLAPredicted": "TSLA"
+}
 
-
-if __name__ == "__main__":
-    load_dotenv()
-
-    client = Client(POCKETBASE_URL)
-    admin_email = os.getenv("ADMIN_EMAIL")
-    admin_password = os.getenv("ADMIN_PASSWORD")
-    client.admins.auth_with_password(admin_email, admin_password)
-    authData = client.collection("_superusers").auth_with_password(admin_email, admin_password)
-
-    actual_data = []
-    predicted_data = [0] * 61
-
-    for i in range(60):
-        random_number = random.randint(1, 100)
-        actual_data.append(random_number)
-
-    while True:
-        try:
+while True:
+    try:
+        for collection, stock in collections.items():
             entry = {}
-            entry['ml'] = predicted_data
-            entry['actual'] = actual_data
-            client.collection("AMZN").create(entry)
-            print("created entry")
-        except Exception as e:
-            print(e)
-            time.sleep(1)
-
-        random_number = random.randint(1, 100)
-        actual_data.append(random_number)
-        actual_data.pop(0)
-
-        predicted_data.append(random_number + 20)
-        predicted_data.pop(0)
-
+            if "Raw" in collection:
+                entry['data'] = data[stock]["actual"]
+            else:
+                entry['data'] = data[stock]["predicted"]
+            client.collection(collection).create(entry)
+            print(f"Created entry in {collection}")
+    except Exception as e:
+        print(e)
         time.sleep(1)
 
+    # Update data with random increases and decreases
+    for stock in stocks:
+        actual_change = random.randint(-5, 5)
+        predicted_change = random.randint(-5, 5)
+
+        new_actual_value = max(0, data[stock]["actual"][-1] + actual_change)
+        new_predicted_value = max(0, data[stock]["predicted"][-1] + predicted_change)
+
+        data[stock]["actual"].append(new_actual_value)
+        data[stock]["actual"].pop(0)
+
+        data[stock]["predicted"].append(new_predicted_value)
+        data[stock]["predicted"].pop(0)
+
+    time.sleep(1)

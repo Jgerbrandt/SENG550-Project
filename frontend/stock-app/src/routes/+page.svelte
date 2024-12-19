@@ -16,14 +16,17 @@
     // Fetch initial data from the collection
     async function fetchData(stock: string) {
         try {
-            const result = await pb.collection(stock).getList(1, 1, {});
-            console.log('Fetched data:', result);
-            if (result.items.length > 0) {
-                const fetchedItem = result.items[0];
+            const rawResult = await pb.collection(`${stock}Raw`).getList(1, 1, {});
+            const predictedResult = await pb.collection(`${stock}Predicted`).getList(1, 1, {});
+            console.log('Fetched data:', rawResult, predictedResult);
+            if (rawResult.items.length > 0 && predictedResult.items.length > 0) {
+                const rawItem = rawResult.items[0];
+                const predictedItem = predictedResult.items[0];
                 item = {
-                    ml: fetchedItem.ml,
-                    actual: fetchedItem.actual
+                    ml: predictedItem.data,
+                    actual: rawItem.data
                 };
+                updateChart();
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -49,13 +52,19 @@
         fetchData(selectedStock);
 
         // Subscribe to the collection
-        pb.collection('AMZN').subscribe('*', function (e: any) {
+        pb.collection(`${selectedStock}Raw`).subscribe('*', function (e: any) {
             console.log('Subscription event:', e);
             const updatedItem = e.record;
-            item = {
-                ml: updatedItem.ml,
-                actual: updatedItem.actual
-            };
+            item.actual = updatedItem.data;
+            updateChart();
+        }).catch((error: any) => {
+            console.error('Error subscribing to collection:', error);
+        });
+
+		pb.collection(`${selectedStock}Predicted`).subscribe('*', function (e: any) {
+            console.log('Subscription event:', e);
+            const updatedItem = e.record;
+            item.ml = updatedItem.data;
             updateChart();
         }).catch((error: any) => {
             console.error('Error subscribing to collection:', error);
@@ -68,7 +77,7 @@
                 labels: [], // Initial empty labels
                 datasets: [
                     {
-                        label: 'ML',
+                        label: 'Predicted',
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         borderColor: 'rgba(75, 192, 192, 1)',
                         data: [], // Initial empty data
