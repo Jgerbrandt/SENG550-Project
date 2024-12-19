@@ -8,7 +8,9 @@ from pocketbase import Client
 from pocketbase.models.collection import Collection
 from dotenv import load_dotenv
 import os
-
+import tensorflow as tf
+from predict import predict_from_df
+import time
 load_dotenv()
 admin_email = os.getenv("ADMIN_EMAIL")
 admin_password = os.getenv("ADMIN_PASSWORD")
@@ -56,9 +58,12 @@ predicted_data = {
 }
 
 def process_batch(batch_df, batch_id):
+    model = tf.keras.models.load_model("mega_saved_model.keras")
     for symbol in stock_data.keys():
         # filter for current stock
         symbol_df = batch_df.filter(col("symbol") == symbol).orderBy("timestamp")
+
+
         
         data_points = symbol_df.collect()
         
@@ -77,9 +82,14 @@ def process_batch(batch_df, batch_id):
                 df = pd.DataFrame(stock_data[symbol], columns=["price", "volume"])
                 
                 # rando prediction
+                predicted_price = predict_from_df(model,df=df)
+                t0 = time.time()
                 predicted_price = random.uniform(df["price"].min(), df["price"].max())
-
+                t1 = time.time()
+                print(f"Prediction Time: {t1-t0}")
                 predicted_price = round(predicted_price, 2)
+                print(f"BUFFR: {df}")
+                print("PREDICTED: " + str(predicted_price))
                 
                 # slide array and add new prediction
                 predicted_data[symbol].append(predicted_price)
