@@ -24,11 +24,11 @@
                 const rawItem = rawResult.items[0];
                 const predictedItem = predictedResult.items[0];
                 item = {
-                    ml: predictedItem.data,
-                    actual: rawItem.data
+                    ml: predictedItem.data.map((tuple: [number, number]) => tuple[0]),
+                    actual: rawItem.data.map((tuple: [number, number]) => tuple[0])
                 };
                 updateChart();
-				updateRecommendation();
+                updateRecommendation();
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -69,22 +69,22 @@
         pb.collection(`${selectedStock}Raw`).subscribe('*', function (e: any) {
             console.log('Subscription event:', e);
             const updatedItem = e.record;
-            item.actual = updatedItem.data;
+            item.actual = updatedItem.data.map((tuple: [number, number]) => tuple[0]);
             updateChart();
+            updateRecommendation();
         }).catch((error: any) => {
             console.error('Error subscribing to collection:', error);
         });
 
-		pb.collection(`${selectedStock}Predicted`).subscribe('*', function (e: any) {
+        pb.collection(`${selectedStock}Predicted`).subscribe('*', function (e: any) {
             console.log('Subscription event:', e);
             const updatedItem = e.record;
-            item.ml = updatedItem.data;
+            item.ml = updatedItem.data.map((tuple: [number, number]) => tuple[0]);
             updateChart();
+            updateRecommendation();
         }).catch((error: any) => {
             console.error('Error subscribing to collection:', error);
         });
-
-		updateRecommendation();
 
         chart_context = chart_canvas.getContext('2d');
         chart = new Chart(chart_context, {
