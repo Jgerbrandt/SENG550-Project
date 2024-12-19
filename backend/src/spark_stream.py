@@ -4,6 +4,17 @@ from pyspark.sql.types import StructType, StringType, DoubleType, LongType, Stru
 import random
 import numpy as np
 import pandas as pd
+from pocketbase import Client
+from pocketbase.models.collection import Collection
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+admin_email = os.getenv("ADMIN_EMAIL")
+admin_password = os.getenv("ADMIN_PASSWORD")
+
+client = Client("http://127.0.0.1:8090")
+authData = client.collection("_superusers").auth_with_password(admin_email, admin_password);
 
 spark = SparkSession.builder \
     .appName("StockDataStream") \
@@ -53,7 +64,7 @@ def process_batch(batch_df, batch_id):
         
         for row in data_points:
             # append the price to the stock data
-            stock_data[symbol].append(row["price"], row['volume'])
+            stock_data[symbol].append((row["price"], row['volume']))
             
             # keep len60
             if len(stock_data[symbol]) > 60:
@@ -62,11 +73,13 @@ def process_batch(batch_df, batch_id):
             # random prediction for now
             # TODO: implement actual prediction
             if len(stock_data[symbol]) == 60:
-                # data to df for aaron(grrrr)
+                # data to df for ML
                 df = pd.DataFrame(stock_data[symbol], columns=["price", "volume"])
                 
                 # rando prediction
                 predicted_price = random.uniform(df["price"].min(), df["price"].max())
+
+                predicted_price = round(predicted_price, 2)
                 
                 # slide array and add new prediction
                 predicted_data[symbol].append(predicted_price)
@@ -75,10 +88,11 @@ def process_batch(batch_df, batch_id):
                 
                 raw_data = stock_data[symbol]
                 prediction_array = predicted_data[symbol]
-               
-                #TODO: replace with DB write
-                print(f"Symbol: {symbol}, Raw Array: {raw_data}, Prediction Array: {prediction_array}")
 
+                client.collection(f"{symbol}Raw").create({"data": raw_data})
+                client.collection(f"{symbol}Predicted").create({"data": prediction_array})
+               
+                print(f"Symbol: {symbol}, Raw Array: {raw_data}, Prediction Array: {prediction_array}")
 
 query = stock_df.writeStream \
     .foreachBatch(process_batch) \

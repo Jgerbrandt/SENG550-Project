@@ -105,6 +105,43 @@ def insert_data(data):
         "conditions": data['conditions']
     })
 
+def create_tables(client, trades_array):
+    for symbol in trades_array:
+        raw_table_name = f"{symbol}Raw"
+        predicted_table_name = f"{symbol}Predicted"
+        
+        # Create raw data table
+        try:
+            client.collections.create({
+                "name": raw_table_name,
+                "type": "base",
+                "fields": [
+                    {
+                        "name": "data",
+                        "type": "json",
+                        "required": True,
+                    }
+                ],
+            })
+        except Exception as e:
+            print(f"Table {raw_table_name} already exists: {e}")
+        
+        # Create predicted data table
+        try:
+            client.collections.create({
+                "name": predicted_table_name,
+                "type": "base",
+                "fields": [
+                    {
+                        "name": "data",
+                        "type": "json",
+                        "required": True,
+                    }
+                ],
+            })
+        except Exception as e:
+            print(f"Table {predicted_table_name} already exists: {e}")
+
 if __name__ == "__main__":
     load_dotenv()
     API_KEY = os.getenv("API_KEY")
@@ -114,6 +151,9 @@ if __name__ == "__main__":
 
     client = Client("http://127.0.0.1:8090")
     authData = client.collection("_superusers").auth_with_password(admin_email, admin_password);
+
+    trades_array = ["AAPL", "AMZN", "TSLA", "GOOGL", "MSFT"]
+    create_tables(client, trades_array)
 
     producer = KafkaProducer(bootstrap_servers='localhost:9092',
         value_serializer=lambda v: json.dumps(v).encode('utf-8'))
