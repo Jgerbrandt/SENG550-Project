@@ -83,28 +83,76 @@
                         title: {
                             display: true,
                             text: 'Index',
+                            color: 'white' // White text
                         },
+                        ticks: {
+                            color: 'white' // White text
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)' // White grid lines
+                        }
                     },
                     y: {
                         display: true,
                         title: {
                             display: true,
                             text: 'Value',
+                            color: 'white' // White text
+                        },
+                        ticks: {
+                            color: 'white' // White text
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)' // White grid lines
                         },
                     },
                 },
+				plugins: {}
             },
+			plugins: [{
+                id: 'background',
+                beforeDraw: (chart) => {
+                    const ctx = chart.canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'destination-over';
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Slightly darker background
+                        ctx.fillRect(0, 0, chart.width, chart.height);
+                        ctx.restore();
+                    }
+                }
+            }]
         });
     });
 </script>
 
-<main>
-    <h1>Item</h1>
-    <div>
-        <div>ML: {item.ml}</div>
-        <div>Actual: {item.actual}</div>
-    </div>
-	
-	<canvas bind:this={chart_canvas} id="myChart"></canvas>
+<style>
 
+    .chart-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .chart-wrapper {
+        width: 80%;
+        height: 70%;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+</style>
+
+<main>
+    <div class="chart-container">
+        <div class="chart-wrapper">
+            <canvas bind:this={chart_canvas} id="myChart"></canvas>
+        </div>
+    </div>
 </main>

@@ -20,7 +20,7 @@ if __name__ == "__main__":
     authData = client.collection("_superusers").auth_with_password(admin_email, admin_password)
 
     actual_data = []
-    predicted_data = [0] * 60
+    predicted_data = [0] * 61
 
     for i in range(60):
         random_number = random.randint(1, 100)
