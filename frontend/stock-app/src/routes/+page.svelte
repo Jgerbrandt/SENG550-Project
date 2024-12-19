@@ -8,14 +8,14 @@
     Chart.register(...registerables);
 
     let item: { ml: any[], actual: any[] } = { ml: [], actual: [] };
-	let selectedStock = 'AMZN';
+    let selectedStock = 'AMZN';
     let recommendation = '';
 
-	let chart: any;
-	let chart_context: any;
-	let chart_canvas: any;
+    let chart: any;
+    let chart_context: any;
+    let chart_canvas: any;
 
-	async function loginSuperUser() {
+    async function loginSuperUser() {
         const adminEmail = env.PUBLIC_ADMIN_EMAIL;
         const adminPassword = env.PUBLIC_ADMIN_PASSWORD;
 
@@ -76,15 +76,17 @@
 
 	function handleStockChange(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
+		pb.collection(`${selectedStock}Raw`).unsubscribe('*');
+        pb.collection(`${selectedStock}Predicted`).unsubscribe('*');
         selectedStock = selectElement.value;
+		updateSubscriptions();
         fetchData(selectedStock);
     }
 
-    onMount(() => {
-		loginSuperUser();
-        fetchData(selectedStock);
+	function updateSubscriptions() {
+		pb.collection(`${selectedStock}Raw`).unsubscribe('*');
+        pb.collection(`${selectedStock}Predicted`).unsubscribe('*');
 
-        // Subscribe to the collection
         pb.collection(`${selectedStock}Raw`).subscribe('*', function (e: any) {
             console.log('Subscription event:', e);
             const updatedItem = e.record;
@@ -104,6 +106,12 @@
         }).catch((error: any) => {
             console.error('Error subscribing to collection:', error);
         });
+    }
+
+    onMount(() => {
+        loginSuperUser();
+        fetchData(selectedStock);
+        updateSubscriptions();
 
         chart_context = chart_canvas.getContext('2d');
         chart = new Chart(chart_context, {
@@ -175,6 +183,11 @@
             }]
         });
     });
+
+	afterUpdate(() => {
+        fetchData(selectedStock);
+    });
+	
 </script>
 
 <style>
