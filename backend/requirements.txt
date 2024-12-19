@@ -3,4 +3,4 @@ websocket-client
 pocketbase
 pandas
 pyspark
-kafka-python
+kafka-python-ng

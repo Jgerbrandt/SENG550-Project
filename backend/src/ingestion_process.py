@@ -118,7 +118,6 @@ if __name__ == "__main__":
     producer = KafkaProducer(bootstrap_servers='localhost:9092',
         value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
-
     ws = websocket.WebSocketApp(
         "wss://stream.data.alpaca.markets/v2/iex",
         header=[
@@ -132,4 +131,3 @@ if __name__ == "__main__":
 
     ws.on_open = on_open
     ws.run_forever()
-
