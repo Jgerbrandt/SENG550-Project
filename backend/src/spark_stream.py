@@ -1,13 +1,13 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col
 from pyspark.sql.types import StructType, StringType, DoubleType, LongType, StructField
-import random
-import numpy as np
 import pandas as pd
 from pocketbase import Client
 from pocketbase.models.collection import Collection
 from dotenv import load_dotenv
 import os
+import tensorflow as tf
+from predict import predict_from_df
 
 load_dotenv()
 admin_email = os.getenv("ADMIN_EMAIL")
@@ -69,17 +69,12 @@ def process_batch(batch_df, batch_id):
             # keep len60
             if len(stock_data[symbol]) > 60:
                 stock_data[symbol].pop(0)
-            
-            # random prediction for now
-            # TODO: implement actual prediction
+        
             if len(stock_data[symbol]) == 60:
                 # data to df for ML
                 df = pd.DataFrame(stock_data[symbol], columns=["price", "volume"])
-                
-                # rando prediction
-                predicted_price = random.uniform(df["price"].min(), df["price"].max())
 
-                predicted_price = round(predicted_price, 2)
+                predicted_price = round(float(predict_from_df(model,df=df)), 2)
                 
                 # slide array and add new prediction
                 predicted_data[symbol].append(predicted_price)
