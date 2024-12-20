@@ -8,7 +8,11 @@ from dotenv import load_dotenv
 import os
 import tensorflow as tf
 from predict import predict_from_df
+<<<<<<< HEAD
 
+=======
+import time
+>>>>>>> 5053a4e7d399cba189cacbb130a120d5c030b6e9
 load_dotenv()
 admin_email = os.getenv("ADMIN_EMAIL")
 admin_password = os.getenv("ADMIN_PASSWORD")
@@ -56,9 +60,12 @@ predicted_data = {
 }
 
 def process_batch(batch_df, batch_id):
+    model = tf.keras.models.load_model("mega_saved_model.keras")
     for symbol in stock_data.keys():
         # filter for current stock
         symbol_df = batch_df.filter(col("symbol") == symbol).orderBy("timestamp")
+
+
         
         data_points = symbol_df.collect()
         
