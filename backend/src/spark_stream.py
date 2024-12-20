@@ -8,11 +8,7 @@ from dotenv import load_dotenv
 import os
 import tensorflow as tf
 from predict import predict_from_df
-<<<<<<< HEAD
 
-=======
-import time
->>>>>>> 5053a4e7d399cba189cacbb130a120d5c030b6e9
 load_dotenv()
 admin_email = os.getenv("ADMIN_EMAIL")
 admin_password = os.getenv("ADMIN_PASSWORD")
@@ -65,8 +61,6 @@ def process_batch(batch_df, batch_id):
         # filter for current stock
         symbol_df = batch_df.filter(col("symbol") == symbol).orderBy("timestamp")
 
-
-        
         data_points = symbol_df.collect()
         
         for row in data_points:
